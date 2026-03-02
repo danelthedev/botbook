@@ -7,6 +7,14 @@
         {
             "folderPath": "llmbook\\front-end\\",
             "color": "foldercolorizer.color_9999ff"
+        },
+        {
+            "folderPath": "llmbook\\templates\\",
+            "color": "foldercolorizer.color_cc6633"
+        },
+        {
+            "folderPath": "llmbook\\static\\",
+            "color": "foldercolorizer.color_996699"
         }
     ]
 }

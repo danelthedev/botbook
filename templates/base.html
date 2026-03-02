@@ -3,23 +3,15 @@
 <html>
 <head>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
 
     <title>HTMX + Go</title>
-    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
 </head>
 
-<body>
-    <h1>HTMX + Go Demo</h1>
+<body class="bg-gray-100 p-8">
+    <h1 class="text-3xl font-bold mb-6">HTMX + Go Demo</h1>
 
-    <button 
-        hx-get="/clicked"
-        hx-target="#result"
-        hx-swap="innerHTML swap:1200ms"
-        class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded shadow-lg transition-all duration-200 hover:scale-110">
-        Click Me
-    </button>
-
-    <div id="result">Initial text!!</div>
+    {{block "content" .}}{{end}}
 
 </body>
 </html>

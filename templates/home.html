@@ -1,0 +1,24 @@
+{{define "content"}}
+<div class="space-y-4">
+
+    {{range .Cards}}
+        {{template "card" .}}
+    {{end}}
+
+    <div class="flex gap-2">
+        {{template "badge" "Go"}}
+        {{template "badge" "HTMX"}}
+        {{template "badge" "Templates"}}
+    </div>
+
+    <button
+        hx-get="/clicked"
+        hx-target="#result"
+        hx-swap="innerHTML"
+        class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded shadow-lg">
+        Click Me
+    </button>
+    <div id="result"></div>
+
+</div>
+{{end}}
