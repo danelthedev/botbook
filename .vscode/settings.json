@@ -1,0 +1,12 @@
+{
+    "folder-color.pathColors": [
+        {
+            "folderPath": "llmbook\\back-end\\",
+            "color": "foldercolorizer.color_00ccff"
+        },
+        {
+            "folderPath": "llmbook\\front-end\\",
+            "color": "foldercolorizer.color_9999ff"
+        }
+    ]
+}
