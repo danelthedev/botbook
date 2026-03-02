@@ -10,11 +10,15 @@
         },
         {
             "folderPath": "llmbook\\templates\\",
-            "color": "foldercolorizer.color_cc6633"
+            "color": "foldercolorizer.color_ffcc99"
         },
         {
             "folderPath": "llmbook\\static\\",
-            "color": "foldercolorizer.color_996699"
+            "color": "foldercolorizer.color_cc99ff"
+        },
+        {
+            "folderPath": "llmbook\\src\\",
+            "color": "foldercolorizer.color_33ccff"
         }
     ]
 }
