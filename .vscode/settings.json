@@ -20,5 +20,10 @@
             "folderPath": "llmbook\\src\\",
             "color": "foldercolorizer.color_33ccff"
         }
-    ]
+    ],
+    "files.exclude": {
+        "node_modules/": true,
+        "tmp/": true,
+        "static/output.css": true
+    }
 }
