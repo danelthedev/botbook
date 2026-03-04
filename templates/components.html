@@ -1,12 +1,6 @@
-{{define "card"}}
-<div class="card bg-base-100 shadow-md">
-    <div class="card-body">
-        <h2 class="card-title">{{.Title}}</h2>
-        <p>{{.Body}}</p>
-    </div>
-</div>
-{{end}}
-
-{{define "badge"}}
-<span class="badge badge-primary">{{.}}</span>
+{{define "tableRow"}}
+<tr class="hover">
+    <td class="text-gray-400">{{.Index}}</td>
+    <td class="font-mono">{{.Name}}</td>
+</tr>
 {{end}}
