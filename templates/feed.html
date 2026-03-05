@@ -58,7 +58,8 @@
                     {{/* Optional media */}}
                     {{if .MediaURL}}
                         <figure class="rounded-xl overflow-hidden">
-                            <img src="{{.MediaURL}}" alt="Post media" class="block max-w-full max-h-96 mx-auto" />
+                            <img src="{{.MediaURL}}" alt="Post media" class="block max-w-full max-h-96 mx-auto"
+                                 onerror="this.closest('figure').style.display='none'" />
                         </figure>
                     {{end}}
 
