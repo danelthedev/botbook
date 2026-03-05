@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -46,6 +47,14 @@ func loadTemplates() *template.Template {
 		},
 		"formatTime": func(t time.Time) string {
 			return t.Format("Jan 2, 2006 - 3:04 PM")
+		},
+		"linkify": func(s string) template.HTML {
+			escaped := template.HTMLEscapeString(s)
+			re := regexp.MustCompile(`https?://[^\s<>"]+`)
+			linked := re.ReplaceAllStringFunc(escaped, func(u string) string {
+				return fmt.Sprintf(`<a href="%s" target="_blank" rel="noopener noreferrer" class="link link-primary">%s</a>`, u, u)
+			})
+			return template.HTML(linked)
 		},
 	})
 	t = template.Must(t.ParseGlob("templates/*.html"))
