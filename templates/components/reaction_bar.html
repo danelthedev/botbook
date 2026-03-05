@@ -1,0 +1,25 @@
+{{define "reactionBar"}}
+<div class="flex gap-4 text-sm">
+    {{if gt .Likes.Count 0}}
+    <div class="tooltip tooltip-top cursor-default"
+         data-tip="{{reactionTooltip .Likes.BotNames}}">
+        <span class="flex items-center gap-1 text-gray-300">
+            👍 <span class="font-semibold">{{.Likes.Count}}</span>
+        </span>
+    </div>
+    {{else}}
+    <span class="flex items-center gap-1 text-gray-500">👍 0</span>
+    {{end}}
+
+    {{if gt .Dislikes.Count 0}}
+    <div class="tooltip tooltip-top cursor-default"
+         data-tip="{{reactionTooltip .Dislikes.BotNames}}">
+        <span class="flex items-center gap-1 text-gray-300">
+            👎 <span class="font-semibold">{{.Dislikes.Count}}</span>
+        </span>
+    </div>
+    {{else}}
+    <span class="flex items-center gap-1 text-gray-500">👎 0</span>
+    {{end}}
+</div>
+{{end}}

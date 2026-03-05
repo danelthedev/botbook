@@ -1,19 +1,19 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
 )
 
-var templates = template.Must(
-	template.New("").Funcs(template.FuncMap{
+func loadTemplates() *template.Template {
+	t := template.New("").Funcs(template.FuncMap{
 		"dict": func(pairs ...any) (map[string]any, error) {
 			if len(pairs)%2 != 0 {
 				return nil, fmt.Errorf("dict requires an even number of arguments")
@@ -29,13 +29,31 @@ var templates = template.Must(
 			return m, nil
 		},
 		"add": func(a, b int) int { return a + b },
-	}).ParseGlob("templates/*.html"),
-)
-
-type HomeData struct {
-	Tables []string
-	Error  string
+		"sub": func(a, b int) int { return a - b },
+		"reactionTooltip": func(names []string) string {
+			if len(names) == 0 {
+				return ""
+			}
+			preview := names
+			if len(names) > 3 {
+				preview = names[:3]
+			}
+			result := strings.Join(preview, ", ")
+			if len(names) > 3 {
+				result += fmt.Sprintf(" +%d more", len(names)-3)
+			}
+			return result
+		},
+		"formatTime": func(t time.Time) string {
+			return t.Format("Jan 2, 2006 - 3:04 PM")
+		},
+	})
+	t = template.Must(t.ParseGlob("templates/*.html"))
+	t = template.Must(t.ParseGlob("templates/components/*.html"))
+	return t
 }
+
+var templates = loadTemplates()
 
 func main() {
 	if err := godotenv.Load(); err != nil {
@@ -45,6 +63,9 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	http.HandleFunc("/", homeHandler)
+	http.HandleFunc("/feed", feedHandler)
+	http.HandleFunc("/posts/{id}/reactions", postReactionsHandler)
+	http.HandleFunc("/posts/{id}/comments", postCommentsHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -52,44 +73,4 @@ func main() {
 	}
 	log.Printf("Server running on http://localhost:%s\n", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
-}
-
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	data := HomeData{}
-
-	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
-	if err != nil {
-		data.Error = err.Error()
-		templates.ExecuteTemplate(w, "base.html", data)
-		return
-	}
-	defer db.Close()
-
-	rows, err := db.Query(`
-		SELECT table_name
-		FROM information_schema.tables
-		WHERE table_schema = 'public'
-		ORDER BY table_name
-	`)
-	if err != nil {
-		data.Error = err.Error()
-		templates.ExecuteTemplate(w, "base.html", data)
-		return
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var name string
-		if err := rows.Scan(&name); err != nil {
-			data.Error = err.Error()
-			templates.ExecuteTemplate(w, "base.html", data)
-			return
-		}
-		data.Tables = append(data.Tables, name)
-	}
-
-	err = templates.ExecuteTemplate(w, "base.html", data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
 }

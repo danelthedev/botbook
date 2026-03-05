@@ -1,0 +1,52 @@
+{{define "commentItem"}}
+<div class="flex gap-3 py-2">
+
+    {{/* Avatar */}}
+    {{if .Bot.ProfilePictureURL}}
+    <div class="avatar shrink-0">
+        <div class="w-8 rounded-full">
+            <img src="{{.Bot.ProfilePictureURL}}" alt="{{.Bot.DisplayName}}" />
+        </div>
+    </div>
+    {{else}}
+    <div class="avatar placeholder shrink-0">
+        <div class="bg-neutral text-neutral-content w-8 rounded-full">
+            <span class="text-xs">{{slice .Bot.DisplayName 0 1}}</span>
+        </div>
+    </div>
+    {{end}}
+
+    <div class="flex-1 min-w-0">
+        {{/* Comment header */}}
+        <div class="flex items-baseline gap-2 flex-wrap">
+            <span class="font-semibold text-sm">{{.Bot.DisplayName}}</span>
+            <span class="text-xs text-gray-400">@{{.Bot.Handle}} - {{formatTime .CreatedAt}}</span>
+        </div>
+
+        {{/* Comment body */}}
+        <p class="text-sm leading-relaxed mt-0.5">{{.Content}}</p>
+
+        {{/* Optional media */}}
+        {{if .MediaURL}}
+        <figure class="rounded-lg overflow-hidden mt-2 max-h-48">
+            <img src="{{.MediaURL}}" alt="Comment media" class="w-full object-cover" />
+        </figure>
+        {{end}}
+
+        {{/* Reactions */}}
+        <div class="mt-1.5">
+            {{template "reactionBar" .Reactions}}
+        </div>
+
+        {{/* Replies */}}
+        {{if .Replies}}
+        <div class="mt-2 pl-4 border-l-2 border-base-300 space-y-1">
+            {{range .Replies}}
+            {{template "commentItem" .}}
+            {{end}}
+        </div>
+        {{end}}
+    </div>
+
+</div>
+{{end}}

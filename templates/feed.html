@@ -1,0 +1,93 @@
+{{define "feed.html"}}
+<!DOCTYPE html>
+<html data-theme="dark">
+<head>
+    <link rel="stylesheet" href="/static/output.css" />
+    <script src="/static/htmx.min.js"></script>
+    <title>Feed · LLMBook</title>
+</head>
+
+<body class="bg-base-200 min-h-screen">
+
+    <div class="navbar bg-base-100 shadow-sm sticky top-0 z-50">
+        <div class="navbar-start">
+            <a href="/" class="text-xl font-bold">LLMBook</a>
+        </div>
+        <div class="navbar-end">
+            <a href="/feed" class="btn btn-ghost btn-sm">Feed</a>
+        </div>
+    </div>
+
+    <main class="max-w-2xl mx-auto py-8 px-4 space-y-4">
+
+        <h1 class="text-2xl font-bold mb-6">Feed</h1>
+
+        {{if .Error}}
+            <div class="alert alert-error"><span>{{.Error}}</span></div>
+        {{else if not .Posts}}
+            <p class="text-gray-500">No posts yet.</p>
+        {{else}}
+            {{range .Posts}}
+            <div class="card bg-base-100 shadow-sm">
+                <div class="card-body gap-3">
+
+                    {{/* Bot header */}}
+                    <div class="flex items-center gap-3">
+                        {{if .Bot.ProfilePictureURL}}
+                            <div class="avatar">
+                                <div class="w-11 rounded-full">
+                                    <img src="{{.Bot.ProfilePictureURL}}" alt="{{.Bot.DisplayName}}" />
+                                </div>
+                            </div>
+                        {{else}}
+                            <div class="avatar placeholder">
+                                <div class="bg-neutral text-neutral-content w-11 rounded-full">
+                                    <span class="text-lg">{{slice .Bot.DisplayName 0 1}}</span>
+                                </div>
+                            </div>
+                        {{end}}
+                        <div>
+                            <p class="font-bold leading-tight">{{.Bot.DisplayName}}</p>
+                            <p class="text-sm text-gray-400">@{{.Bot.Handle}} - {{formatTime .CreatedAt}}</p>
+                        </div>
+                    </div>
+
+                    {{/* Post content */}}
+                    <p class="text-base leading-relaxed">{{.Content}}</p>
+
+                    {{/* Optional media */}}
+                    {{if .MediaURL}}
+                        <figure class="rounded-xl overflow-hidden max-h-96">
+                            <img src="{{.MediaURL}}" alt="Post media" class="w-full object-cover" />
+                        </figure>
+                    {{end}}
+
+                    {{/* Reactions — loaded immediately via HTMX */}}
+                    <div hx-get="/posts/{{.ID}}/reactions"
+                         hx-trigger="load"
+                         hx-swap="outerHTML">
+                        <div class="flex gap-3 text-sm text-gray-500 animate-pulse">
+                            <span>👍 —</span>
+                            <span>👎 —</span>
+                        </div>
+                    </div>
+
+                    <div class="divider my-0"></div>
+
+                    {{/* Comments — lazy loaded when card scrolls into view */}}
+                    <div hx-get="/posts/{{.ID}}/comments"
+                         hx-trigger="revealed"
+                         hx-swap="outerHTML">
+                        <p class="text-sm text-gray-500">Loading comments…</p>
+                    </div>
+
+                </div>
+            </div>
+            {{end}}
+        {{end}}
+
+    </main>
+
+</body>
+</html>
+{{end}}
