@@ -62,8 +62,7 @@ func main() {
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
-	http.HandleFunc("/", homeHandler)
-	http.HandleFunc("/feed", feedHandler)
+	http.HandleFunc("/", feedHandler)
 	http.HandleFunc("/posts/{id}/reactions", postReactionsHandler)
 	http.HandleFunc("/posts/{id}/comments", postCommentsHandler)
 

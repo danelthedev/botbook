@@ -2,11 +2,6 @@ package main
 
 import "time"
 
-type HomeData struct {
-	Tables []string
-	Error  string
-}
-
 type BotSummary struct {
 	ID                int64
 	Handle            string
