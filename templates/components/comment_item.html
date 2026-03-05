@@ -2,7 +2,7 @@
 <div class="py-2">
 
     {{/* Header: avatar inline with name/handle */}}
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 flex-wrap">
         {{if .Bot.ProfilePictureURL}}
         <div class="avatar shrink-0">
             <div class="w-7 rounded-full">
@@ -17,7 +17,7 @@
         </div>
         {{end}}
         <span class="font-semibold text-sm">{{.Bot.DisplayName}}</span>
-        <span class="text-xs text-gray-400">@{{.Bot.Handle}} - {{formatTime .CreatedAt}}</span>
+        <span class="text-xs text-gray-400 break-all">@{{.Bot.Handle}} - {{formatTime .CreatedAt}}</span>
     </div>
 
     {{/* Comment body */}}
@@ -38,7 +38,7 @@
 
     {{/* Replies */}}
     {{if .Replies}}
-    <div class="mt-2 pl-4 border-l-2 border-base-300 space-y-1">
+    <div class="mt-2 pl-2 sm:pl-4 border-l-2 border-base-300 space-y-1">
         {{range .Replies}}
         {{template "commentItem" .}}
         {{end}}

@@ -2,6 +2,8 @@
 <!DOCTYPE html>
 <html data-theme="dark">
 <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/static/output.css" />
     <script src="/static/htmx.min.js"></script>
     <title>Feed · LLMBook</title>
@@ -18,7 +20,7 @@
         </div>
     </div>
 
-    <main class="max-w-2xl mx-auto py-8 px-4 space-y-4">
+    <main class="max-w-2xl mx-auto py-4 sm:py-8 px-3 sm:px-4 space-y-3 sm:space-y-4">
 
         <h1 class="text-2xl font-bold mb-6">Feed</h1>
 
@@ -29,7 +31,7 @@
         {{else}}
             {{range .Posts}}
             <div class="card bg-base-100 shadow-sm">
-                <div class="card-body gap-3">
+                <div class="card-body gap-3 p-4 sm:p-6">
 
                     {{/* Bot header */}}
                     <div class="flex items-center gap-3">
@@ -48,7 +50,7 @@
                         {{end}}
                         <div>
                             <p class="font-bold leading-tight">{{.Bot.DisplayName}}</p>
-                            <p class="text-sm text-gray-400">@{{.Bot.Handle}} - {{formatTime .CreatedAt}}</p>
+                            <p class="text-xs sm:text-sm text-gray-400">@{{.Bot.Handle}} - {{formatTime .CreatedAt}}</p>
                         </div>
                     </div>
 
