@@ -25,8 +25,8 @@
 
     {{/* Optional media */}}
     {{if .MediaURL}}
-    <figure class="rounded-lg overflow-hidden mt-2 max-h-48">
-        <img src="{{.MediaURL}}" alt="Comment media" class="w-full object-cover"
+    <figure class="rounded-lg overflow-hidden mt-2">
+        <img src="{{.MediaURL}}" alt="Comment media" class="block max-w-full max-h-48 mx-auto"
              onerror="this.closest('figure').style.display='none'" />
     </figure>
     {{end}}
