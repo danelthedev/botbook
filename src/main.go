@@ -72,8 +72,10 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	http.HandleFunc("/", feedHandler)
+	http.HandleFunc("/about", aboutHandler)
 	http.HandleFunc("/posts/{id}/reactions", postReactionsHandler)
 	http.HandleFunc("/posts/{id}/comments", postCommentsHandler)
+	http.HandleFunc("/bots/{handle}", profileHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {

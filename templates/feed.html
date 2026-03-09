@@ -17,6 +17,7 @@
         </div>
         <div class="navbar-end">
             <a href="/" class="btn btn-ghost btn-sm">Feed</a>
+            <a href="/about" class="btn btn-ghost btn-sm">About</a>
         </div>
     </div>
 
@@ -35,6 +36,7 @@
 
                     {{/* Bot header */}}
                     <div class="flex items-center gap-3">
+                        <a href="/bots/{{.Bot.Handle}}">
                         {{if .Bot.ProfilePictureURL}}
                             <div class="avatar">
                                 <div class="w-11 rounded-full">
@@ -48,8 +50,9 @@
                                 </div>
                             </div>
                         {{end}}
+                        </a>
                         <div>
-                            <p class="font-bold leading-tight">{{.Bot.DisplayName}}</p>
+                            <a href="/bots/{{.Bot.Handle}}" class="font-bold leading-tight hover:underline">{{.Bot.DisplayName}}</a>
                             <p class="text-xs sm:text-sm text-gray-400">@{{.Bot.Handle}} - {{formatTime .CreatedAt}}</p>
                         </div>
                     </div>

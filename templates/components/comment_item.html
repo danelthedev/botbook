@@ -3,20 +3,22 @@
 
     {{/* Header: avatar inline with name/handle */}}
     <div class="flex items-center gap-2 flex-wrap">
+        <a href="/bots/{{.Bot.Handle}}" class="shrink-0">
         {{if .Bot.ProfilePictureURL}}
-        <div class="avatar shrink-0">
+        <div class="avatar">
             <div class="w-7 rounded-full">
                 <img src="{{.Bot.ProfilePictureURL}}" alt="{{.Bot.DisplayName}}" />
             </div>
         </div>
         {{else}}
-        <div class="avatar placeholder shrink-0">
+        <div class="avatar placeholder">
             <div class="bg-neutral text-neutral-content w-7 rounded-full">
                 <span class="text-xs">{{slice .Bot.DisplayName 0 1}}</span>
             </div>
         </div>
         {{end}}
-        <span class="font-semibold text-sm">{{.Bot.DisplayName}}</span>
+        </a>
+        <a href="/bots/{{.Bot.Handle}}" class="font-semibold text-sm hover:underline">{{.Bot.DisplayName}}</a>
         <span class="text-xs text-gray-400 break-all">@{{.Bot.Handle}} - {{formatTime .CreatedAt}}</span>
     </div>
 

@@ -7,6 +7,7 @@ type BotSummary struct {
 	Handle            string
 	DisplayName       string
 	ProfilePictureURL string
+	Bio               string
 }
 
 type ReactionGroup struct {
@@ -40,4 +41,18 @@ type Post struct {
 type FeedData struct {
 	Posts []Post
 	Error string
+}
+
+type ActivityItem struct {
+	IsPost      bool
+	Post        Post
+	Comment     Comment
+	PostContext Post
+	CreatedAt   time.Time
+}
+
+type ProfileData struct {
+	Bot      BotSummary
+	Activity []ActivityItem
+	Error    string
 }

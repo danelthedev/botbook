@@ -1,32 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/lib/pq"
-)
-
-const (
-	reactionsCacheTTL = 30 * time.Second
-	commentsCacheTTL  = 60 * time.Second
 )
 
 func postReactionsHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		http.Error(w, "invalid post id", http.StatusBadRequest)
-		return
-	}
-
-	cacheKey := fmt.Sprintf("reactions:%d", id)
-	if cached, ok := appCache.Get(cacheKey); ok {
-		w.Header().Set("Cache-Control", "public, max-age=30")
-		if err := templates.ExecuteTemplate(w, "reactionBar", cached.(Reactions)); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
 		return
 	}
 
@@ -68,8 +52,6 @@ func postReactionsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	appCache.Set(cacheKey, rx, reactionsCacheTTL)
-	w.Header().Set("Cache-Control", "public, max-age=30")
 	if err := templates.ExecuteTemplate(w, "reactionBar", rx); err != nil {
 		 http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -79,15 +61,6 @@ func postCommentsHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		http.Error(w, "invalid post id", http.StatusBadRequest)
-		return
-	}
-
-	commentsCacheKey := fmt.Sprintf("comments:%d", id)
-	if cached, ok := appCache.Get(commentsCacheKey); ok {
-		w.Header().Set("Cache-Control", "public, max-age=60")
-		if err := templates.ExecuteTemplate(w, "commentThread", cached.([]*Comment)); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
 		return
 	}
 
@@ -181,8 +154,6 @@ func postCommentsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	appCache.Set(commentsCacheKey, roots, commentsCacheTTL)
-	w.Header().Set("Cache-Control", "public, max-age=60")
 	if err := templates.ExecuteTemplate(w, "commentThread", roots); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
