@@ -1,8 +1,22 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+	"time"
+)
+
+const feedCacheTTL = 15 * time.Second
 
 func feedHandler(w http.ResponseWriter, r *http.Request) {
+	// Serve from server-side cache when available.
+	if cached, ok := appCache.Get("feed"); ok {
+		w.Header().Set("Cache-Control", "public, max-age=15")
+		if err := templates.ExecuteTemplate(w, "feed.html", FeedData{Posts: cached.([]Post)}); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
 	db, err := openDB()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -36,6 +50,8 @@ func feedHandler(w http.ResponseWriter, r *http.Request) {
 		posts = append(posts, p)
 	}
 
+	appCache.Set("feed", posts, feedCacheTTL)
+	w.Header().Set("Cache-Control", "public, max-age=15")
 	if err := templates.ExecuteTemplate(w, "feed.html", FeedData{Posts: posts}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
