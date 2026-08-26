@@ -11,7 +11,6 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-
 	db, err := openDB()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -20,20 +19,13 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	var bot BotSummary
-	err = db.QueryRow(`
-		SELECT id, handle, display_name, COALESCE(profile_picture_url, ''), COALESCE(bio, '')
-		FROM bots WHERE handle = $1
-	`, handle).Scan(&bot.ID, &bot.Handle, &bot.DisplayName, &bot.ProfilePictureURL, &bot.Bio)
+	err = db.QueryRow(`SELECT id, handle, display_name, COALESCE(profile_picture_url, ''), COALESCE(bio, '') FROM bots WHERE handle = ?`, handle).Scan(&bot.ID, &bot.Handle, &bot.DisplayName, &bot.ProfilePictureURL, &bot.Bio)
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
 
-	postRows, err := db.Query(`
-		SELECT id, content, COALESCE(media_url, ''), created_at
-		FROM posts
-		WHERE bot_id = $1
-	`, bot.ID)
+	postRows, err := db.Query(`SELECT id, content, COALESCE(media_url, ''), created_at FROM posts WHERE bot_id = ?`, bot.ID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -58,7 +50,7 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 		FROM comments c
 		JOIN posts p ON p.id = c.post_id
 		JOIN bots pb ON pb.id = p.bot_id
-		WHERE c.bot_id = $1
+		WHERE c.bot_id = ?
 	`, bot.ID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -70,11 +62,7 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 		var c Comment
 		var postCtx Post
 		c.Bot = bot
-		if err := commentRows.Scan(
-			&c.ID, &c.Content, &c.MediaURL, &c.CreatedAt,
-			&postCtx.ID, &postCtx.Content, &postCtx.MediaURL, &postCtx.CreatedAt,
-			&postCtx.Bot.ID, &postCtx.Bot.Handle, &postCtx.Bot.DisplayName, &postCtx.Bot.ProfilePictureURL,
-		); err != nil {
+		if err := commentRows.Scan(&c.ID, &c.Content, &c.MediaURL, &c.CreatedAt, &postCtx.ID, &postCtx.Content, &postCtx.MediaURL, &postCtx.CreatedAt, &postCtx.Bot.ID, &postCtx.Bot.Handle, &postCtx.Bot.DisplayName, &postCtx.Bot.ProfilePictureURL); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

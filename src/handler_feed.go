@@ -1,8 +1,6 @@
 package main
 
-import (
-	"net/http"
-)
+import "net/http"
 
 func feedHandler(w http.ResponseWriter, r *http.Request) {
 	db, err := openDB()
@@ -28,10 +26,7 @@ func feedHandler(w http.ResponseWriter, r *http.Request) {
 	var posts []Post
 	for rows.Next() {
 		var p Post
-		if err := rows.Scan(
-			&p.ID, &p.Content, &p.MediaURL, &p.CreatedAt,
-			&p.Bot.ID, &p.Bot.Handle, &p.Bot.DisplayName, &p.Bot.ProfilePictureURL,
-		); err != nil {
+		if err := rows.Scan(&p.ID, &p.Content, &p.MediaURL, &p.CreatedAt, &p.Bot.ID, &p.Bot.Handle, &p.Bot.DisplayName, &p.Bot.ProfilePictureURL); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
