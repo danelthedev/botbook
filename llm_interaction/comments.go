@@ -53,18 +53,6 @@ func CreateComments(db *sql.DB, n int) error {
 	for _, b := range bots {
 		botByHandle[strings.ToLower(b.Handle)] = b.ID
 	}
-	commentIDs := func() (ids []int64, byID map[int64]int64) {
-		rows, _ := db.Query(`SELECT id, bot_id FROM comments`)
-		defer rows.Close()
-		byID = map[int64]int64{}
-		for rows.Next() {
-			var id, bid int64
-			rows.Scan(&id, &bid)
-			ids = append(ids, id)
-			byID[id] = bid
-		}
-		return
-	}
 
 	seenKW := map[string]bool{}
 	seenImg := map[string]bool{}
@@ -74,9 +62,33 @@ func CreateComments(db *sql.DB, n int) error {
 			batch = n - done
 		}
 		sampled := weightedPick(posts, batch)
+
+		// build prompt with post + its existing thread context so LLM can reply to comments too
 		var sb strings.Builder
 		for _, p := range sampled {
 			fmt.Fprintf(&sb, "Post %d by @%s: %s\n", p.ID, p.Handle, p.Content)
+			cRows, _ := db.Query(`SELECT c.id, c.content, b.handle, COALESCE(c.parent_comment_id,0) FROM comments c JOIN bots b ON b.id=c.bot_id WHERE c.post_id=? ORDER BY c.created_at LIMIT 6`, p.ID)
+			if cRows != nil {
+				has := false
+				for cRows.Next() {
+					var cid, parent int64
+					var ctext, chandle string
+					cRows.Scan(&cid, &ctext, &chandle, &parent)
+					if !has {
+						fmt.Fprintf(&sb, "  Thread on post %d:\n", p.ID)
+						has = true
+					}
+					if parent != 0 {
+						fmt.Fprintf(&sb, "    - Comment %d by @%s (reply to %d): %s\n", cid, chandle, parent, ctext)
+					} else {
+						fmt.Fprintf(&sb, "    - Comment %d by @%s: %s\n", cid, chandle, ctext)
+					}
+				}
+				cRows.Close()
+				if !has {
+					fmt.Fprintf(&sb, "  (no comments yet on this post)\n")
+				}
+			}
 		}
 		var botSb strings.Builder
 		for _, b := range bots {
@@ -84,11 +96,13 @@ func CreateComments(db *sql.DB, n int) error {
 		}
 		prompt := fmt.Sprintf(`Generate %d comments for fictional parody bots on transparent satirical site. Each bot openly labeled fictional, not real person. Comments max 280 chars, may contain ONE https:// link. media_url "" or ONE https://loremflickr.com/600/400/<common-keyword> where keyword is single common word highly relevant to comment image (e.g., gaming, cat, rain, gym). Must be common Flickr tag - map obscure to common. Only ~20%% of comments should have media, rest "".
 
-Posts:
+Rules: each comment MUST directly respond to its post_id's post content — reference specifics, not generic. If thread exists for that post, ~40%% of comments should be replies to existing comments: set parent_id to that comment's id and make content reply to that comment's text (agree/disagree/joke/argue). parent_id null = top-level reply to post. ~60%% top-level, ~40%% threaded where threads exist.
+
+Posts + threads:
 %s
 Bots:
 %s
-Return JSON array only: [{"handle":"...","post_id":123,"parent_id":null,"content":"...","media_url":""}] parent_id null for top-level.`, batch, sb.String(), botSb.String())
+Return JSON array only: [{"handle":"...","post_id":123,"parent_id":null,"content":"...","media_url":""}] post_id must be one of the listed post ids, parent_id must be null or an existing comment id from SAME post's thread.`, batch, sb.String(), botSb.String())
 
 		raw, err := callLLM(prompt)
 		if err != nil {
@@ -100,7 +114,6 @@ Return JSON array only: [{"handle":"...","post_id":123,"parent_id":null,"content
 			fmt.Printf("comments json fail %v raw %s\n", err, raw)
 			continue
 		}
-		ids, byID := commentIDs()
 		for _, c := range comments {
 			if done >= n {
 				break
@@ -168,16 +181,9 @@ Return JSON array only: [{"handle":"...","post_id":123,"parent_id":null,"content
 				db.QueryRow(`SELECT COUNT(*), bot_id FROM comments WHERE id=? AND post_id=?`, *c.ParentID, c.PostID).Scan(&cnt, &parentBot)
 				if cnt > 0 && parentBot != botID {
 					parent = *c.ParentID
-				} else if cnt > 0 && parentBot == botID {
+				} else {
+					// invalid parent (wrong post or self-reply) -> drop to top-level, don't force random
 					parent = nil
-				} else if len(ids) > 0 {
-					parent = nil
-					for _, id := range ids {
-						if byID[id] != botID {
-							parent = id
-							break
-						}
-					}
 				}
 			}
 			created := time.Now().Add(-time.Duration(rand.Intn(3*24))*time.Hour).Add(-time.Duration(rand.Intn(60)) * time.Minute)
@@ -188,7 +194,7 @@ Return JSON array only: [{"handle":"...","post_id":123,"parent_id":null,"content
 				continue
 			}
 			done++
-			fmt.Printf("comment %d/%d @%s on post %d %.30s media:%v\n", done, n, c.Handle, c.PostID, c.Content, c.MediaURL != "")
+			fmt.Printf("comment %d/%d @%s on post %d parent %v %.30s media:%v\n", done, n, c.Handle, c.PostID, parent, c.Content, c.MediaURL != "")
 		}
 	}
 	return nil
